@@ -1,12 +1,16 @@
 const express = require("express");
 const router = express.Router();
 
-// Test route
-router.get("/test", (req, res) => {
-  res.json({
-    success: true,
-    message: "Report route working ✅"
-  });
+let reports = [];
+
+router.post("/", (req, res) => {
+  reports.push(req.body);
+  res.json({ message: "Report saved" });
+});
+
+router.get("/", (req, res) => {
+  res.json(reports);
 });
 
 module.exports = router;
+
