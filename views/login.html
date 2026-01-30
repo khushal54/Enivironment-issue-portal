@@ -134,36 +134,33 @@ button:hover{background:#00e676;transform:scale(1.03);}
 
 <form id="loginForm">
 
-  <div class="input-group">
-    <input type="text" id="username" required>
-    <label>Username</label>
-  </div>
+<div class="input-group">
+<input type="text" id="username" required>
+<label>Username</label>
+</div>
 
-  <div class="input-group">
-    <input type="password" id="password" required>
-    <label>Password</label>
-    <span class="eye" onclick="togglePassword()">👁</span>
-  </div>
+<div class="input-group">
+<input type="password" id="password" required>
+<label>Password</label>
+<span class="eye" onclick="togglePassword()">👁</span>
+</div>
 
-  <div class="input-group">
-    <input type="email" id="email" required>
-    <label>Email</label>
-  </div>
+<div class="input-group">
+<input type="email" id="email" required>
+<label>Email</label>
+</div>
 
-  <div class="input-group">
-    <input type="text" id="otp" placeholder="Enter OTP">
-  </div>
+<div class="input-group">
+<input type="text" id="otp" placeholder="Enter OTP">
+</div>
 
-  <!-- SEND OTP -->
-  <button type="button" onclick="sendOTP()">Send OTP</button>
+<button type="button" onclick="sendOTP()">Send OTP</button>
+<button type="button" onclick="verifyOTP()">Verify OTP</button>
 
-  <!-- VERIFY OTP -->
-  <button type="button" onclick="verifyOTP()">Verify OTP</button>
-
-  <!-- LOGIN -->
-  <button type="submit">Login</button>
+<button type="submit">Login</button>
 
 </form>
+
 
 
 
@@ -171,62 +168,104 @@ button:hover{background:#00e676;transform:scale(1.03);}
 
 <script>
 let emailVerified = false;
+let verifiedEmail = "";
+
+const ADMIN_EMAIL = "24eg105t07@anurag.edu.in";
+const ADMIN_PASS = "saivardhan@admin";
 
 function togglePassword(){
-const pwd=document.getElementById("password");
-pwd.type=pwd.type==="password"?"text":"password";
+  const pwd=document.getElementById("password");
+  pwd.type=pwd.type==="password"?"text":"password";
 }
 
+/* RESET VERIFICATION IF EMAIL CHANGES */
+document.getElementById("email").addEventListener("input", () => {
+  emailVerified = false;
+  verifiedEmail = "";
+});
+
+/* SEND OTP */
 async function sendOTP(){
-const email=document.getElementById("email").value;
+  const email=document.getElementById("email").value.trim();
 
-await fetch("/send-email",{
-method:"POST",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify({email})
-});
+  if(!email){
+    alert("Enter Email First");
+    return;
+  }
 
-alert("OTP Sent!");
+  const res = await fetch("/send-email",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({email})
+  });
+
+  const data = await res.json();
+
+  if(data.status==="sent"){
+    alert("OTP Sent!");
+  }else{
+    alert("Error Sending OTP");
+  }
 }
 
+/* VERIFY OTP */
 async function verifyOTP(){
-const email=document.getElementById("email").value;
-const otp=document.getElementById("otp").value;
+  const email=document.getElementById("email").value.trim();
+  const otp=document.getElementById("otp").value.trim();
 
-const res=await fetch("/verify-otp",{
-method:"POST",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify({email,otp})
-});
+  if(!otp){
+    alert("Enter OTP");
+    return;
+  }
 
-const data=await res.json();
+  const res=await fetch("/verify-otp",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({email,otp})
+  });
 
-if(data.status==="verified"){
-emailVerified=true;
-alert("Email Verified!");
-}else{
-alert("Invalid OTP");
+  const data=await res.json();
+
+  if(data.status==="verified"){
+    emailVerified=true;
+    verifiedEmail=email;
+    alert("Email Verified!");
+  }else{
+    emailVerified=false;
+    verifiedEmail="";
+    alert("Invalid OTP");
+  }
 }
-}
 
+/* LOGIN */
 document.getElementById("loginForm").addEventListener("submit",function(e){
-e.preventDefault();
+  e.preventDefault();
 
-if(!emailVerified){
-alert("Please verify email first");
-return;
-}
+  const pass=document.getElementById("password").value.trim();
+  const email=document.getElementById("email").value.trim();
 
-const user=username.value;
-const pass=password.value;
+  /* MUST VERIFY OTP */
+  if(!emailVerified || verifiedEmail !== email){
+    alert("Verify Email First");
+    return;
+  }
 
-if(user==="khushal54" && pass==="Khushal@143"){
-window.location="/admin";
-}else{
-window.location="/report";
-}
+  /* ADMIN LOGIN */
+  if(email === ADMIN_EMAIL && pass === ADMIN_PASS){
+    alert("Admin Login Success");
+    window.location.href="/admin";
+    return;
+  }
+
+  /* USER LOGIN */
+  alert("User Login");
+  window.location.href="/report";
 });
 </script>
+
+
+
+
 
 
 
