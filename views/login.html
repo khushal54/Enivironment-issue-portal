@@ -133,49 +133,103 @@ button:hover{background:#00e676;transform:scale(1.03);}
 <p>Protect Nature · Report Issues</p>
 
 <form id="loginForm">
-<div class="input-group">
-<input type="text" id="username" required>
-<label>Username</label>
-</div>
 
-<div class="input-group">
-<input type="password" id="password" required>
-<label>Password</label>
-<span class="eye" onclick="togglePassword()">👁</span>
-</div>
+  <div class="input-group">
+    <input type="text" id="username" required>
+    <label>Username</label>
+  </div>
 
-<button type="submit">Login</button>
+  <div class="input-group">
+    <input type="password" id="password" required>
+    <label>Password</label>
+    <span class="eye" onclick="togglePassword()">👁</span>
+  </div>
 
-<div class="links">
-<a href="#">Forgot Password?</a>
-<a href="#">Sign Up</a>
-</div>
+  <div class="input-group">
+    <input type="email" id="email" required>
+    <label>Email</label>
+  </div>
+
+  <div class="input-group">
+    <input type="text" id="otp" placeholder="Enter OTP">
+  </div>
+
+  <!-- SEND OTP -->
+  <button type="button" onclick="sendOTP()">Send OTP</button>
+
+  <!-- VERIFY OTP -->
+  <button type="button" onclick="verifyOTP()">Verify OTP</button>
+
+  <!-- LOGIN -->
+  <button type="submit">Login</button>
+
 </form>
+
+
+
 </div>
 
 <script>
+let emailVerified = false;
+
 function togglePassword(){
 const pwd=document.getElementById("password");
 pwd.type=pwd.type==="password"?"text":"password";
 }
 
-/* AUTH LOGIC */
-document.getElementById("loginForm").addEventListener("submit",async function(e){
+async function sendOTP(){
+const email=document.getElementById("email").value;
+
+await fetch("/send-email",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({email})
+});
+
+alert("OTP Sent!");
+}
+
+async function verifyOTP(){
+const email=document.getElementById("email").value;
+const otp=document.getElementById("otp").value;
+
+const res=await fetch("/verify-otp",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({email,otp})
+});
+
+const data=await res.json();
+
+if(data.status==="verified"){
+emailVerified=true;
+alert("Email Verified!");
+}else{
+alert("Invalid OTP");
+}
+}
+
+document.getElementById("loginForm").addEventListener("submit",function(e){
 e.preventDefault();
 
-const user=document.getElementById("username").value;
-const pass=document.getElementById("password").value;
-
-/* ADMIN LOGIN */
-if(user==="khushal54" && pass==="Khushal@143"){
-window.location="/admin";
+if(!emailVerified){
+alert("Please verify email first");
 return;
 }
 
-/* NORMAL USER -> REPORT PAGE */
+const user=username.value;
+const pass=password.value;
+
+if(user==="khushal54" && pass==="Khushal@143"){
+window.location="/admin";
+}else{
 window.location="/report";
+}
 });
 </script>
+
+
+
 
 </body>
 </html>
