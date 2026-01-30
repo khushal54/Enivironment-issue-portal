@@ -1,0 +1,10 @@
+<div id="reports"></div>
+
+<script>
+fetch("/api/reports")
+  .then(res => res.json())
+  .then(data => {
+    document.getElementById("reports").innerHTML =
+      data.map(r => `<p>${r.title} - ${r.location}</p>`).join("");
+  });
+</script>
