@@ -3,14 +3,13 @@ const router = express.Router();
 
 let reports = [];
 
-// POST
+// Save report
 router.post("/", (req, res) => {
-  const newReport = req.body;
-  reports.push(newReport);
-  res.json({ message: "Report saved" });
+  reports.push(req.body);
+  res.json({ message: "Report Saved Successfully" });
 });
 
-// GET
+// Get reports
 router.get("/", (req, res) => {
   res.json(reports);
 });

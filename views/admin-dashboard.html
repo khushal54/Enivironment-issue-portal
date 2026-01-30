@@ -1,10 +1,63 @@
-<div id="reports"></div>
+<!DOCTYPE html>
+<html>
+<head>
+<title>Admin Dashboard</title>
+<style>
+body{
+  background:#020504;
+  color:white;
+  font-family:sans-serif;
+  padding:40px;
+}
+.card{
+  background:#111;
+  border-radius:12px;
+  padding:20px;
+  margin:20px 0;
+}
+img{
+  width:200px;
+  border-radius:10px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Admin Dashboard</h1>
+<div id="list">Loading...</div>
 
 <script>
-fetch("/api/reports")
-  .then(res => res.json())
-  .then(data => {
-    document.getElementById("reports").innerHTML =
-      data.map(r => `<p>${r.title} - ${r.location}</p>`).join("");
-  });
+async function loadReports() {
+  try {
+    const res = await fetch("/api/reports");
+    const data = await res.json();
+
+    if (data.length === 0) {
+      document.getElementById("list").innerHTML = "No Reports Yet";
+      return;
+    }
+
+    document.getElementById("list").innerHTML =
+      data.map(r => `
+        <div class="card">
+          <h3>${r.type}</h3>
+          <p><b>Location:</b> ${r.loc}</p>
+          <p><b>Description:</b> ${r.desc}</p>
+          <p><b>Severity:</b> ${r.severity}</p>
+          ${r.img ? `<img src="${r.img}">` : ""}
+        </div>
+      `).join("");
+
+  } catch(err) {
+    document.getElementById("list").innerHTML = "Failed to Load";
+  }
+}
+
+loadReports();
 </script>
+
+</body>
+</html>
+
+

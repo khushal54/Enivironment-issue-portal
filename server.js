@@ -1,42 +1,41 @@
 const express = require("express");
+const bodyParser = require("body-parser");
 const path = require("path");
 
 const app = express();
+const PORT = 3000;
 
-// Middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+let reports = [];
 
-// Static files (CSS, JS, Images)
-app.use(express.static(path.join(__dirname, "public")));
+app.use(bodyParser.json({ limit: "10mb" }));
+app.use(express.static("public"));
+app.use(express.static("views"));
 
-// ---------- HTML PAGE ROUTES ----------
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "views", "index.html"));
+  res.sendFile(path.join(__dirname, "views/login.html"));
 });
 
 app.get("/login", (req, res) => {
-  res.sendFile(path.join(__dirname, "views", "login.html"));
+  res.sendFile(path.join(__dirname, "views/login.html"));
 });
 
 app.get("/report", (req, res) => {
-  res.sendFile(path.join(__dirname, "views", "report.html"));
+  res.sendFile(path.join(__dirname, "views/report.html"));
 });
 
-app.get("/user-dashboard", (req, res) => {
-  res.sendFile(path.join(__dirname, "views", "user-dashboard.html"));
+app.get("/admin", (req, res) => {
+  res.sendFile(path.join(__dirname, "views/admin-dashboard.html"));
 });
 
-app.get("/admin-dashboard", (req, res) => {
-  res.sendFile(path.join(__dirname, "views", "admin-dashboard.html"));
+app.post("/api/reports", (req, res) => {
+  reports.push(req.body);
+  res.json({ status: "ok" });
 });
 
-// ---------- API ROUTES ----------
-const reportRoutes = require("./routes/report");
-app.use("/api/reports", reportRoutes);
+app.get("/api/reports", (req, res) => {
+  res.json(reports);
+});
 
-// Start server
-const PORT = 3000;
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`Server running at http://localhost:${PORT}`);
 });

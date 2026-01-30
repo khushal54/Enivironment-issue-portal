@@ -1,8 +1,259 @@
-<form id="reportForm">
-  <input id="title" placeholder="Issue title" required>
-  <textarea id="description" placeholder="Description"></textarea>
-  <input id="location" placeholder="Location">
-  <button type="submit">Submit</button>
-</form>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EcoReport Pro | 3D Dashboard</title>
 
-<script src="/main.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
+
+<style>
+/* 🔹 YOUR ORIGINAL DESIGN — UNTOUCHED */
+:root {
+--primary:#2d6a4f;
+--accent:#52b788;
+--danger:#ff4d4d;
+--warning:#ffb703;
+--glass:rgba(255,255,255,0.08);
+--glass-border:rgba(255,255,255,0.15);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+font-family:'Inter',sans-serif;
+background:#020504;
+color:#e0e0e0;
+min-height:100vh;
+overflow-x:hidden
+}
+#canvas-container{position:fixed;inset:0;z-index:-1}
+.overlay-vignette{position:fixed;inset:0;background:radial-gradient(circle,transparent 10%,rgba(0,0,0,.8) 100%);pointer-events:none}
+nav{
+background:rgba(0,0,0,.8);
+backdrop-filter:blur(15px);
+padding:1rem 2rem;
+display:flex;
+justify-content:space-between;
+align-items:center;
+border-bottom:1px solid var(--glass-border)
+}
+.logo{display:flex;gap:10px;font-weight:700;font-size:1.4rem}
+.container{
+max-width:1300px;
+margin:2rem auto;
+padding:0 20px;
+display:grid;
+grid-template-columns:420px 1fr;
+gap:40px
+}
+.card{
+background:var(--glass);
+backdrop-filter:blur(20px);
+padding:2.5rem;
+border-radius:24px;
+border:1px solid var(--glass-border)
+}
+.form-group{margin-bottom:1.4rem}
+label{font-size:.85rem;font-weight:600;margin-bottom:8px;display:block;color:#a2d2ff}
+input,select,textarea{
+width:100%;
+padding:14px;
+background:rgba(0,0,0,.5);
+border:1px solid var(--glass-border);
+border-radius:12px;
+color:white
+}
+.btn-primary{
+width:100%;
+background:linear-gradient(135deg,var(--primary),var(--accent));
+padding:16px;
+border:none;
+border-radius:12px;
+font-weight:700;
+cursor:pointer
+}
+#img-preview{width:100%;border-radius:12px;margin-top:15px;display:none}
+@media(max-width:1000px){.container{grid-template-columns:1fr}}
+</style>
+</head>
+
+<body>
+
+<div id="canvas-container"></div>
+<div class="overlay-vignette"></div>
+
+<nav>
+<div class="logo"><i data-lucide="leaf"></i> EcoReport Hub</div>
+</nav>
+
+<main class="container">
+<aside class="card">
+<h2><i data-lucide="radio"></i> Signal Input</h2>
+
+<form id="reportForm">
+<div class="form-group">
+<label>Incident Category</label>
+<select id="type" required>
+<option value="Garbage Dump">Illegal Waste Site</option>
+<option value="Water Pollution">Chemical Leak / Water</option>
+<option value="Air Pollution">Hazardous Emissions</option>
+<option value="Deforestation">Forest Loss</option>
+</select>
+</div>
+
+<div class="form-group">
+<label>Threat Level</label>
+<select id="severity">
+<option value="Low">Low</option>
+<option value="Medium">Medium</option>
+<option value="High">High</option>
+</select>
+</div>
+
+<div class="form-group">
+<label>Location</label>
+<input id="loc" required>
+</div>
+
+<div class="form-group">
+<label>Description</label>
+<textarea id="desc" required></textarea>
+</div>
+
+<div class="form-group">
+<label>Image Evidence</label>
+<input type="file" id="media" accept="image/*">
+<img id="img-preview">
+</div>
+
+<button class="btn-primary">Submit Report</button>
+</form>
+</aside>
+</main>
+
+<script>
+    
+/* ---------- 3D ENGINE ---------- */
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+// Stars
+const starGeom = new THREE.BufferGeometry();
+const starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.015 });
+const starVertices = [];
+for (let i = 0; i < 6000; i++) {
+  starVertices.push((Math.random() - 0.5) * 20, (Math.random() - 0.5) * 20, (Math.random() - 0.5) * 20);
+}
+starGeom.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
+const stars = new THREE.Points(starGeom, starMat);
+scene.add(stars);
+
+// Globe
+const globeGeom = new THREE.SphereGeometry(2.2, 64, 64);
+const textureLoader = new THREE.TextureLoader();
+const globeTex = textureLoader.load('https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg');
+const globeMat = new THREE.MeshStandardMaterial({
+  map: globeTex,
+  metalness: 0.1,
+  roughness: 0.8,
+  emissive: 0x112211,
+  emissiveIntensity: 0.2
+});
+const globe = new THREE.Mesh(globeGeom, globeMat);
+scene.add(globe);
+
+const sun = new THREE.DirectionalLight(0xffffff, 2.5);
+sun.position.set(5, 3, 5);
+scene.add(sun);
+scene.add(new THREE.AmbientLight(0x333333));
+
+camera.position.z = 5;
+
+function animate() {
+  requestAnimationFrame(animate);
+  globe.rotation.y += 0.001;
+  stars.rotation.y -= 0.0002;
+  renderer.render(scene, camera);
+}
+animate();
+
+/* ---------- FORM LOGIC ---------- */
+lucide.createIcons();
+
+const form = document.getElementById("reportForm");
+const preview = document.getElementById("img-preview");
+const fileInput = document.getElementById("media");
+
+// Image preview
+fileInput.onchange = e => {
+  const file = e.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = ev => {
+      preview.src = ev.target.result;
+      preview.style.display = "block";
+    };
+    reader.readAsDataURL(file);
+  }
+};
+
+// Submit report to backend
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const file = fileInput.files[0];
+  let imageData = null;
+
+  if (file) {
+    imageData = await new Promise(resolve => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.readAsDataURL(file);
+    });
+  }
+
+  const data = {
+    type: document.getElementById("type").value,
+    severity: document.getElementById("severity").value,
+    loc: document.getElementById("loc").value,
+    desc: document.getElementById("desc").value,
+    img: imageData,
+    time: new Date().toLocaleString()
+  };
+
+  try {
+    await fetch("/api/reports", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data)
+    });
+
+    alert("Report Submitted Successfully!");
+    form.reset();
+    preview.style.display = "none";
+
+  } catch (err) {
+    alert("Submission Failed");
+    console.log(err);
+  }
+});
+
+// Resize fix
+window.onresize = () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+};
+
+
+
+</script>
+
+
+
+</body>
+</html>

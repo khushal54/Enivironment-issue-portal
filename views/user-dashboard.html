@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>User Dashboard</title>
+</head>
+<body style="background:black;color:white;font-family:sans-serif">
+
+<h1>User Reports</h1>
+<div id="list"></div>
+
+<script>
+async function loadReports() {
+  const res = await fetch("/api/reports");
+  const data = await res.json();
+
+  const list = document.getElementById("list");
+  list.innerHTML = data.map(r => `
+    <div style="border:1px solid white;padding:10px;margin:10px">
+      <h3>${r.type}</h3>
+      <p>${r.desc}</p>
+      <p>${r.loc}</p>
+      ${r.img ? `<img src="${r.img}" width="200">` : ""}
+      <small>${r.time}</small>
+    </div>
+  `).join("");
+}
+
+loadReports();
+</script>
+</body>
+</html>
