@@ -7,56 +7,31 @@
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:Segoe UI}
-body{
-  background:#050d0b;
-  color:white;
-  padding:20px;
-  background-image:url("https://static.vecteezy.com/system/resources/previews/022/448/299/large_2x/save-earth-day-poster-environment-day-nature-green-ai-generative-glossy-background-images-tree-and-water-free-photo.jpg")
-}
+body{background:#050d0b;color:white;padding:20px}
 
-header{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin-bottom:25px;
-  flex-wrap:wrap;
-  gap:10px;
-}
-
-h1{color:#52ff9a;font-size:28px;}
-
-.stats{display:flex;gap:15px;flex-wrap:wrap;}
+header{display:flex;justify-content:space-between;align-items:center;margin-bottom:25px;flex-wrap:wrap;gap:10px}
+h1{color:#52ff9a;font-size:28px}
+.stats{display:flex;gap:15px;flex-wrap:wrap}
 
 .stat{
-  padding:10px 18px;
-  border-radius:10px;
-  font-weight:bold;
-  background:rgba(255,255,255,0.08);
-  backdrop-filter:blur(8px);
-  cursor:pointer;
-  transition:0.2s;
+padding:10px 18px;
+border-radius:10px;
+font-weight:bold;
+background:rgba(255,255,255,0.08);
+cursor:pointer;
 }
-.stat:hover{background:#52ff9a33}
 
 .container{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
-  gap:20px;
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+gap:20px
 }
 
 .card{
-  background:rgba(255,255,255,0.08);
-  border-radius:15px;
-  padding:20px;
-  backdrop-filter:blur(10px);
-  border-left:8px solid gray;
-  position:relative;
-  animation:fade 0.4s ease;
-}
-
-@keyframes fade{
-  from{opacity:0;transform:translateY(10px)}
-  to{opacity:1;transform:translateY(0)}
+background:rgba(255,255,255,0.08);
+border-radius:15px;
+padding:20px;
+border-left:8px solid gray
 }
 
 .high{border-left-color:#ff4d4d}
@@ -64,34 +39,34 @@ h1{color:#52ff9a;font-size:28px;}
 .low{border-left-color:#52ff9a}
 
 .tag{
-  font-size:12px;
-  font-weight:bold;
-  padding:3px 10px;
-  border-radius:20px;
-  display:inline-block;
-  margin-bottom:10px;
+font-size:12px;
+font-weight:bold;
+padding:3px 10px;
+border-radius:20px;
+display:inline-block;
+margin-bottom:10px
 }
 
 .tag.high{background:#ff4d4d33;color:#ff4d4d}
 .tag.medium{background:#ffb70333;color:#ffb703}
 .tag.low{background:#52ff9a33;color:#52ff9a}
 
-img{
-  width:100%;
-  border-radius:10px;
-  margin-top:10px;
+img{width:100%;border-radius:10px;margin-top:10px}
+
+.fileLabel{
+display:block;
+margin-top:6px;
+font-size:12px;
+opacity:0.7
 }
 
-.time{
-  font-size:12px;
-  opacity:0.6;
-  margin-top:10px;
-}
-
-.empty{
-  text-align:center;
-  opacity:0.5;
-  margin-top:50px;
+button{
+margin-top:10px;
+padding:8px 12px;
+background:#52ff9a;
+border:none;
+border-radius:6px;
+cursor:pointer;
 }
 </style>
 </head>
@@ -99,84 +74,100 @@ img{
 <body>
 
 <header>
-  <h1>🌍 Eco Admin Dashboard</h1>
-  <div class="stats">
-    <div class="stat" onclick="filterReports('all')" id="total">Total: 0</div>
-    <div class="stat" onclick="filterReports('high')" id="high">High: 0</div>
-    <div class="stat" onclick="filterReports('medium')" id="medium">Medium: 0</div>
-    <div class="stat" onclick="filterReports('low')" id="low">Low: 0</div>
-  </div>
+<h1>🌍 Eco Admin Dashboard</h1>
+<div class="stats">
+<div class="stat" onclick="filterReports('all')" id="total">Total: 0</div>
+<div class="stat" onclick="filterReports('high')" id="high">High: 0</div>
+<div class="stat" onclick="filterReports('medium')" id="medium">Medium: 0</div>
+<div class="stat" onclick="filterReports('low')" id="low">Low: 0</div>
+</div>
 </header>
 
 <div class="container" id="reports"></div>
-<div class="empty" id="emptyMsg">No Reports Yet</div>
 
 <script>
-let allReports = [];
+let allReports=[];
 
 async function loadReports(){
-  const res = await fetch("/api/reports");
-  allReports = await res.json();
-  updateStats(allReports);
-  renderReports(allReports);
+const res=await fetch("/api/reports");
+allReports=await res.json();
+updateStats(allReports);
+renderReports(allReports);
 }
 
 function updateStats(data){
-  let high=0,medium=0,low=0;
-
-  data.forEach(r=>{
-    const level = r.severity.toLowerCase();
-    if(level==="high") high++;
-    if(level==="medium") medium++;
-    if(level==="low") low++;
-  });
-
-  document.getElementById("total").innerText="Total: "+data.length;
-  document.getElementById("high").innerText="High: "+high;
-  document.getElementById("medium").innerText="Medium: "+medium;
-  document.getElementById("low").innerText="Low: "+low;
+let h=0,m=0,l=0;
+data.forEach(r=>{
+if(r.severity==="High")h++;
+if(r.severity==="Medium")m++;
+if(r.severity==="Low")l++;
+});
+total.innerText="Total: "+data.length;
+high.innerText="High: "+h;
+medium.innerText="Medium: "+m;
+low.innerText="Low: "+l;
 }
 
 function renderReports(data){
-  const container=document.getElementById("reports");
-  const emptyMsg=document.getElementById("emptyMsg");
-  container.innerHTML="";
+const box=document.getElementById("reports");
+box.innerHTML="";
 
-  if(data.length===0){
-    emptyMsg.style.display="block";
-    return;
-  } else {
-    emptyMsg.style.display="none";
-  }
+data.forEach(r=>{
+box.innerHTML+=`
+<div class="card ${r.severity.toLowerCase()}">
+<span class="tag ${r.severity.toLowerCase()}">${r.severity}</span>
+<h3>${r.type}</h3>
+<p>${r.desc}</p>
+${r.img?`<img src="${r.img}">`:""}
 
-  data.reverse().forEach(r=>{
-    const level=r.severity.toLowerCase();
+<label style="display:block;margin-top:8px">
+<input type="file" onchange="handleFile(this,${r.id})">
+</label>
 
-    container.innerHTML+=`
-      <div class="card ${level}">
-        <span class="tag ${level}">${r.severity} Priority</span>
-        <h3>${r.type}</h3>
-        <p><b>Location:</b> ${r.loc}</p>
-        <p>${r.desc}</p>
-        ${r.img ? `<img src="${r.img}">` : ""}
-        <div class="time">${r.time}</div>
-      </div>
-    `;
-  });
+<button onclick="resolveReport(${r.id})">Resolve</button>
+</div>`;
+});
+}
+
+let proofFiles={};
+
+function handleFile(input,id){
+if(input.files.length>0){
+proofFiles[id]=input.files[0];
+}
+}
+
+async function resolveReport(id){
+
+const file=proofFiles[id];
+
+if(!file){
+alert("Upload Proof First");
+return;
+}
+
+const reader=new FileReader();
+reader.onload=async e=>{
+await fetch("/resolve-report",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({id,proof:e.target.result})
+});
+alert("Resolved!");
+loadReports();
+};
+reader.readAsDataURL(file);
 }
 
 function filterReports(level){
-  if(level==="all"){
-    renderReports(allReports);
-  } else {
-    const filtered = allReports.filter(r => r.severity.toLowerCase()===level);
-    renderReports(filtered);
-  }
+if(level==="all")renderReports(allReports);
+else renderReports(allReports.filter(r=>r.severity.toLowerCase()===level));
 }
 
 loadReports();
 setInterval(loadReports,5000);
 </script>
+
 
 </body>
 </html>
